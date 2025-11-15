@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Personal Finance & Event Planner</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Excel Export (SheetJS) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body id="app-body" class="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen text-gray-800">
+
+<!-- HEADER -->
+<header class="flex justify-between items-center px-6 py-4 bg-blue-600 text-white shadow-md">
+  <h1 class="text-xl font-bold">Smart Personal Finance & Event Planner</h1>
+  <div class="flex items-center gap-4">
+    <span id="headerUsername" class="font-semibold"></span>
+    <button id="themeToggle" class="bg-white text-blue-600 px-3 py-1 rounded-md">🌙</button>
+  </div>
+</header>
+
+<!-- LOGIN SECTION -->
+<section id="loginSection" class="py-16 flex flex-col items-center">
+  <div class="bg-white shadow-lg rounded-xl p-8 w-80">
+    <h2 class="text-xl font-bold mb-4">Login / Register</h2>
+
+    <input id="usernameInput" type="text" placeholder="Enter Username" class="inputField mb-3">
+    <input id="emailInput" type="email" placeholder="Enter Email" class="inputField mb-3">
+    <input id="passwordInput" type="password" placeholder="Enter Password" class="inputField mb-3">
+
+    <p id="authMsg" class="text-red-600 text-sm mb-3"></p>
+
+    <div class="flex gap-2">
+      <button id="loginBtn" class="btn-primary w-1/2">Login</button>
+      <button id="registerBtn" class="btn-secondary w-1/2">Register</button>
+    </div>
+  </div>
+</section>
+
+<!-- MONTH SELECTION -->
+<section id="monthSelectSection" class="hidden py-10 flex flex-col items-center">
+  <h2 class="text-xl font-bold mb-2">Welcome, <span id="userNameDisplay"></span></h2>
+
+  <p class="text-gray-600 mb-2">Select or Add a Month:</p>
+  <input id="monthInput" type="month" class="inputField mb-4">
+
+  <div class="flex gap-3">
+    <button id="openMonthBtn" class="btn-primary">Open Month</button>
+    <button id="openCurrentBtn" class="btn-secondary">Current</button>
+  </div>
+
+  <h3 class="mt-6 mb-2 font-semibold text-gray-700">Recent Months</h3>
+  <div id="recentMonths" class="flex flex-wrap gap-2"></div>
+
+  <button id="logoutBtn" class="btn-danger mt-6 hidden">Logout</button>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashboardSection" class="hidden px-6 py-10">
+
+  <!-- Header -->
+  <div class="flex justify-between mb-6">
+    <h2 id="dashboardMonthLabel" class="text-2xl font-bold"></h2>
+    <button id="backToMonthSelection" class="btn-secondary">← Back</button>
+  </div>
+
+  <p class="mb-4 text-gray-800 font-semibold">
+    User: <span id="dashboardUsername" class="text-blue-600"></span>
+  </p>
+
+  <p class="text-gray-700 mb-5">Remaining Income:
+    <span id="remainingIncome" class="font-bold text-blue-700">₹0</span>
+  </p>
+
+  <!-- INCOME -->
+  <div class="card">
+    <h3 class="section-title">Income</h3>
+
+    <div class="flex gap-2 mb-3">
+      <input id="incomeTitle" type="text" class="inputField" placeholder="Title">
+      <input id="incomeAmount" type="number" class="inputField" placeholder="Amount">
+      <button id="addIncomeBtn" class="btn-add">Add</button>
+    </div>
+
+    <p id="incomeTotal" class="text-sm text-gray-600 mb-2"></p>
+    <ul id="incomeList" class="list"></ul>
+  </div>
+
+  <!-- EXPENSE -->
+  <div class="card">
+    <h3 class="section-title">Expenses</h3>
+
+    <div class="flex gap-2 mb-3">
+      <input id="expenseTitle" type="text" class="inputField" placeholder="Title">
+      <input id="expenseAmount" type="number" class="inputField" placeholder="Amount">
+
+      <select id="expensePriority" class="inputField">
+        <option>High</option>
+        <option>Medium</option>
+        <option>Low</option>
+      </select>
+
+      <label class="flex items-center gap-1 text-sm">
+        <input type="checkbox" id="expenseRecurring">
+        Recurring
+      </label>
+
+      <button id="addExpenseBtn" class="btn-add">Add</button>
+    </div>
+
+    <p id="expenseTotal" class="text-sm text-gray-600 mb-2"></p>
+    <p id="expenseAlert" class="text-red-600 text-sm hidden mb-2"></p>
+
+    <ul id="expenseList" class="list"></ul>
+  </div>
+
+  <!-- EVENTS -->
+  <div class="card">
+    <h3 class="section-title">Events</h3>
+
+    <div class="flex gap-2 mb-3">
+      <input id="eventName" type="text" class="inputField" placeholder="Event Name">
+      <input id="eventDate" type="date" class="inputField">
+      <input id="eventBudget" type="number" class="inputField" placeholder="Budget">
+
+      <select id="eventPriority" class="inputField">
+        <option>High</option>
+        <option>Medium</option>
+        <option>Low</option>
+      </select>
+
+      <button id="addEventBtn" class="btn-add">Add</button>
+    </div>
+
+    <p id="eventTotal" class="text-sm text-gray-600 mb-2"></p>
+    <ul id="eventList" class="list"></ul>
+  </div>
+
+  <!-- GOALS -->
+  <div class="card">
+    <h3 class="section-title">Goals / Savings</h3>
+
+    <div class="flex gap-2 mb-3">
+      <input id="goalName" type="text" class="inputField" placeholder="Goal Name">
+      <input id="goalTarget" type="number" class="inputField" placeholder="Target Amount">
+      <input id="goalDeadline" type="date" class="inputField">
+
+      <select id="goalPriority" class="inputField">
+        <option>High</option>
+        <option>Medium</option>
+        <option>Low</option>
+      </select>
+
+      <button id="addGoalBtn" class="btn-add">Add</button>
+    </div>
+
+    <p id="goalTotal" class="text-sm text-gray-600 mb-2"></p>
+    <p id="goalAlert" class="text-red-600 text-sm hidden mb-2"></p>
+
+    <ul id="goalList" class="list"></ul>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="card">
+    <h3 class="section-title">Data & Charts</h3>
+
+    <label class="text-sm font-semibold">Select Category:</label>
+    <select id="chartSelect" class="inputField mb-4">
+      <option value="expenses">Expenses</option>
+      <option value="events">Events</option>
+      <option value="goals">Goals</option>
+      <option value="income">Income</option>
+    </select>
+
+    <p class="font-semibold mb-2">Data of <span id="chartsMonthLabel"></span></p>
+    <canvas id="financeChart" height="180"></canvas>
+
+    <p class="mt-6 font-semibold">Combined Charts (Past + Present)</p>
+    <canvas id="combinedChart" height="200"></canvas>
+  </div>
+
+  <!-- ANALYSIS -->
+  <div class="card">
+    <h3 class="section-title">Analysis</h3>
+    <button id="getAnalysisBtn" class="btn-primary mb-3">Get Analysis</button>
+
+    <pre id="analysisBlock" class="text-xs bg-gray-100 p-3 rounded"></pre>
+  </div>
+
+  <!-- EXPORTS -->
+  <div class="text-center mt-6 flex justify-center gap-3">
+    <button id="exportExcel" class="btn-secondary">📊 Export Excel</button>
+    <button id="exportPDF" class="btn-secondary">📄 Export PDF</button>
+    <button id="shareReport" class="btn-secondary">📤 Share</button>
+  </div>
+
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
