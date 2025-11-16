@@ -2,9 +2,9 @@
 (() => {
   'use strict';
 
-  /* -------------------
-     Storage keys & helpers
-  -------------------*/
+  
+    //Storage keys & helpers
+  
   const LS_KEY = 'spf_users_v_final';
   const LS_ACTIVE = 'spf_active';
   const RECENT_PREFIX = 'spf_recent_';
@@ -22,9 +22,9 @@
   function nowMonth() { return new Date().toISOString().slice(0,7); }
   function friendlyMonthYear(m) { try { const [y,mm]=m.split('-').map(Number); return new Date(y,mm-1,1).toLocaleString(undefined,{month:'long',year:'numeric'});}catch{ return m; } }
 
-  /* -------------------
-     DOM refs (match index.html)
-  -------------------*/
+  
+     //DOM refs (match index.html)
+  
   const loginSection = document.getElementById('loginSection');
   const monthSelectSection = document.getElementById('monthSelectSection');
   const dashboardSection = document.getElementById('dashboardSection');
@@ -105,9 +105,9 @@
   // theme
   const themeToggle = document.getElementById('themeToggle');
 
-  /* -------------------
-     Charts states
-  -------------------*/
+  //Charts
+     
+ 
   let financeChart = null;
   let combinedChart = null;
 
@@ -116,18 +116,14 @@
     try { if (combinedChart) combinedChart.destroy(); } catch {}
   }
 
-  /* -------------------
-     Utilities
-  -------------------*/
+  
   function safeNum(v){ return Number(v || 0); }
   function escapeHtml(s){ if(s===undefined||s===null) return ''; return String(s).replace(/[&<>"'`=\/]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[c])); }
 
   function usersObj(){ return loadUsers(); }
   function curUserObj(){ const email = getActive(); if(!email) return null; const u = loadUsers()[email]; return u || null; }
 
-  /* -------------------
-     Password rules (simple offline)
-  -------------------*/
+  //password validation 
   function validPassword(p){
     if(!p) return false;
     if(p.length < 8) return false;
@@ -138,9 +134,8 @@
     return true;
   }
 
-  /* -------------------
-     Navigation & UI flow
-  -------------------*/
+  //UI flow
+     
   function showLogin() {
     loginSection.classList.remove('hidden');
     monthSelectSection.classList.add('hidden');
@@ -165,16 +160,14 @@
     dashboardUsername.textContent = (curUserObj() && curUserObj().username) ? curUserObj().username : getActive();
     headerUsername.textContent = dashboardUsername.textContent;
     // save recents and maybe import previous
-    saveRecentMonth(month);
-    // offer import from previous month
+    saveRecentMonth(month);
     maybeOfferImportFromPreviousMonth(month);
-    // load all
-    loadAllForMonth(month);
-    // render charts
+    
+    loadAllForMonth(month);
     setTimeout(()=> { renderMainChart(); renderCombinedChart(); }, 120);
   }
 
-  // recent months
+  
   function saveRecentMonth(m){
     const email = getActive(); if(!email) return;
     const k = RECENT_PREFIX + email;
@@ -213,9 +206,8 @@
     }
   }
 
-  /* -------------------
-     Auth handlers
-  -------------------*/
+  //Authentication 
+     
   registerBtn.addEventListener('click', ()=>{
     authMsg.textContent = '';
     const email = (emailInput.value||'').trim().toLowerCase();
@@ -261,15 +253,13 @@
   openCurrentBtn.addEventListener('click', ()=> showDashboardFor(nowMonth()));
   backToMonthSelection.addEventListener('click', ()=> showMonthSelect());
 
-  // theme
+ 
   themeToggle.addEventListener('click', ()=>{
     document.body.classList.toggle('dark');
     themeToggle.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
   });
 
-  /* -------------------
-     Import previous month (events+goals) prompt
-  -------------------*/
+  //Import prev month
   function maybeOfferImportFromPreviousMonth(currentMonth){
     const email = getActive(); if(!email) return;
     const users = loadUsers(); const user = users[email]; if(!user) return;
@@ -281,7 +271,7 @@
     if(totalItems === 0) return;
     // Ask once per open
     if(!confirm(`Previous month (${prev}) has ${prevData.events.length} event(s) and ${prevData.goals.length} goal(s). Import their amounts to ${currentMonth}?`)) return;
-    // Show choose dialog using prompt listing items & indices; user can leave blank to import all
+    
     const lines = []; let idx=0;
     if(prevData.events.length){ lines.push('Events:'); prevData.events.forEach(ev=>{ lines.push(`${idx}: [E] ${ev.name} — ${ev.date} — ₹${ev.budget}`); idx++; }); }
     if(prevData.goals.length){ lines.push('Goals:'); prevData.goals.forEach(g=>{ lines.push(`${idx}: [G] ${g.name} — ${g.deadline||'N/A'} — ₹${g.target}`); idx++; }); }
@@ -306,7 +296,7 @@
       }
       idx++;
     });
-    // Reserve funds: add an expense "Imported prev-month commitments" to subtract from remaining
+    
     const importedTotal = (prevData.events||[]).reduce((s,e)=>s+Number(e.budget||0),0) + (prevData.goals||[]).reduce((s,g)=>s+Number(g.target||0),0);
     if(importedTotal > 0){
       cur.expenses.push({ title: 'Imported prev-month commitments', amount: importedTotal, priority: 'High', recurring: false, createdAt: new Date().toISOString(), _imported:true });
@@ -317,9 +307,7 @@
     users[email] = user; saveUsers(users);
   }
 
-  /* -------------------
-     CRUD & Renderers
-  -------------------*/
+  //CRUD
   function getMonthObj(month){
     const u = curUserObj(); if(!u) return null;
     return ensureMonthObj(u, month);
@@ -392,7 +380,7 @@
     saveUsers(loadUsers()); renderIncomeList(mKey); refreshTotalsAndAlerts(mKey);
   };
 
-  /* Expenses */
+  //Expenses
   addExpenseBtn.addEventListener('click', ()=>{
     const t = (expenseTitle.value||'').trim();
     const a = Number(expenseAmount.value||0);
@@ -451,7 +439,7 @@
     saveUsers(loadUsers()); renderExpenseList(mKey); refreshTotalsAndAlerts(mKey);
   };
 
-  /* Events */
+  //Events 
   addEventBtn.addEventListener('click', ()=>{
     const name = (eventName.value||'').trim();
     const dateStr = eventDate.value;
@@ -526,7 +514,7 @@
     saveUsers(loadUsers()); renderEventList(mKey); refreshTotalsAndAlerts(mKey);
   };
 
-  /* Goals */
+  //Goals
   addGoalBtn.addEventListener('click', ()=>{
     const name = (goalName.value||'').trim();
     const deadline = goalDeadline.value || null;
@@ -600,9 +588,7 @@
     m.goals.splice(i,1); saveUsers(loadUsers()); renderGoalList(mKey); refreshTotalsAndAlerts(mKey);
   };
 
-  /* -------------------
-     Date helper (only this month or next month allowed; no past)
-  -------------------*/
+  
   function checkDateAllowedForEntry(dateStr, selectedMonth){
     if(!dateStr || !selectedMonth) return { ok:false, msg:'Invalid date or month' };
     const d = new Date(dateStr + 'T00:00:00'); if(isNaN(d.getTime())) return { ok:false, msg:'Invalid date format' };
@@ -618,9 +604,9 @@
     return { ok:false, msg:'You can add only for this month or next month' };
   }
 
-  /* -------------------
-     Totals, alerts & analysis rules
-  -------------------*/
+  
+     //Totals, alerts & analysis rules
+  
   function calcTotals(m){
     const incomes = m.income||[]; const expenses = m.expenses||[]; const events = m.events||[]; const goals = m.goals||[];
     const totalIncome = incomes.reduce((s,i)=>s+Number(i.amount||0),0);
@@ -663,12 +649,10 @@
     } else {
       expenseAlert.classList.add('hidden'); expenseAlert.textContent = '';
       goalAlert.classList.add('hidden'); goalAlert.textContent = '';
-    }
-  }
-
-  /* -------------------
-     Charts: per-month & combined
-  -------------------*/
+   } 
+ }    
+//Charts: per-month & combined
+ 
   function renderMainChart(){
     const sel = chartSelect.value || 'expenses';
     const mKey = dashboardSection.dataset.currentMonth;
@@ -719,15 +703,14 @@
 
   chartSelect.addEventListener('change', ()=> renderMainChart());
 
-  /* -------------------
-     Analysis generation (per your rules)
-  -------------------*/
+  //Analysis generation
+ 
   getAnalysisBtn.addEventListener('click', ()=>{
     const u = curUserObj(); if(!u) return alert('Open a month first');
     const months = Object.keys(u.months||{}).sort();
     const current = dashboardSection.dataset.currentMonth;
     if(!current) return alert('No month selected');
-    // Build analysis object
+    
     const analysis = {};
     // Current totals + alerts
     const curObj = u.months[current] || { income:[], expenses:[], events:[], goals:[] };
@@ -816,9 +799,9 @@
     renderCombinedChart();
   });
 
-  /* -------------------
-     Exports & Web Share
-  -------------------*/
+  
+     //Exports & Web Share
+  
   async function createPdfBlob(email, month){
     const users = loadUsers(); const user = users[email]; const m = (user.months && user.months[month]) || { income:[], expenses:[], events:[], goals:[] };
     if(window.jspdf && window.jspdf.jsPDF){
@@ -898,21 +881,17 @@
     } catch(e){ alert('Share failed: ' + (e.message||e)); }
   });
 
-  /* -------------------
-     Helpers: loadUsers wrapper & initial state
-  -------------------*/
+  
   function loadUsers(){ return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); }
   function saveUsersObj(u){ localStorage.setItem(LS_KEY, JSON.stringify(u)); }
 
-  // Ensure dataset.currentMonth on dashboard when opening
+  
   function openDashboardAndSetMonth(m){
     dashboardSection.dataset.currentMonth = m;
     showDashboardFor(m);
   }
 
-  /* -------------------
-     Entry flow: when page loads
-  -------------------*/
+  //Page loads
   (function init(){
     const active = getActive();
     // if active user exists show month select
@@ -923,16 +902,10 @@
     }
 
     // On page load, attach some functions to window for edit/delete (they call window.spf_* above)
-    // But we already attached via window.spf_* in many places
-
-    // When dashboard opened, set dataset.currentMonth using last recent or now
-    // For safety attach listener to showDashboardFor via saveRecentMonth
+    
   })();
 
-  /* -------------------
-     Convenience: when a month is opened externally call openDashboardAndSetMonth
-     We need to set dataset.currentMonth to correct "YYYY-MM" (we store when calling showDashboardFor)
-  -------------------*/
+  
   // modify showDashboardFor to set dataset and call load
   const originalShowDashboardFor = showDashboardFor;
   showDashboardFor = function(month){
@@ -951,10 +924,7 @@
     setTimeout(()=> { renderMainChart(); renderCombinedChart(); }, 120);
   };
 
-  // small tweak: when opening month via showDashboardFor before redefinition, ensure we use new
-  // Update some global UI initial wiring:
-  // Expose edit/delete handlers globally (they were defined on window earlier)
- // ---------- Robust global edit/delete handlers (REPLACE the old no-op block) ----------
+  
 (function attachGlobalHandlers(){
   // helper to persist a user object back to LS
   function persistUser(email, userObj){
@@ -964,7 +934,7 @@
     localStorage.setItem(LS_KEY, JSON.stringify(users));
   }
 
-  // common guard & helpers
+  
   function getCurrentMonthKey(){
     return (dashboardSection && dashboardSection.dataset && dashboardSection.dataset.currentMonth) ? dashboardSection.dataset.currentMonth : nowMonth();
   }
